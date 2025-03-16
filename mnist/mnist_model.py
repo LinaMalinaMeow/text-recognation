@@ -1,30 +1,33 @@
 from keras import models
 import numpy as np
-import mnist_preprocess
+import sys
+import os
+# todo: сделать нормально
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from shared import mnist_preprocess
 
 # Вычислено эмпирическим путем
-MAX_RECOGNATION_PERCENT = 0.7
+MAX_RECOGNATION_PERCENT = 0.45
 
-def show_procentages(prediction):
-    percentages = prediction * 100
-    classes = range(9)
-    for cls, pct in zip(classes, percentages[0]):
-        print(f"Класс {cls}: {pct:.2f}%")
 
 def mnist_recognation(path):
     prepared_image = mnist_preprocess.rec_digit(path)
 
-    model = models.load_model('mnist/mnist_recognation.h5')
+    model = models.load_model('mnist/mnist_recognation_extendend.h5')
 
     prediction = model.predict(prepared_image)
-    show_procentages(prediction)
 
     max_predict = np.amax((prediction[0]))
+    print(max_predict)
 
     if (max_predict < MAX_RECOGNATION_PERCENT):
-        return 'Пропуск'
+        return 'Не распознано'
 
     predicted_class = np.argmax(prediction, axis=1)
+
+    if (predicted_class == 10): return '-'
+    if (predicted_class == 11): return 'x'
+
     result = predicted_class[0]
 
     return result

@@ -4,7 +4,7 @@ from keras import datasets
 import matplotlib.pyplot as plt
 import mnist_model
 
-model = models.load_model('mnist/mnist_recognation.h5')
+model = models.load_model('mnist/mnist_recognation_extendend.h5')
 
 def mnist_test_data_demo():
     (_, _), (x_test, y_test) = datasets.mnist.load_data()
@@ -39,7 +39,7 @@ def custom_data_demo():
     print(f'Результат 3 (без препроцессинга не определяет) должен быть равен 2, равен - {result3}')
     print(f'Результат 4 (перечеркнутая единица) должен быть равен 1, равен - {result4}')
     print(f'Результат 5 (очень непонятная двойка) должен быть равен 2, равен - {result5}')
-    print(f'Результат 6 (крестик) должен вывести "Пропуск", равен - {result6}')
-    print(f'Результат 7 (прочерк) должен вывести "Пропуск", равен - {result7}')
+    print(f'Результат 6 (крестик), равен - {result6}')
+    print(f'Результат 7 (прочерк), равен - {result7}')
 
 custom_data_demo()

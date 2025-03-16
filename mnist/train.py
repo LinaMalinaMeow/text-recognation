@@ -3,6 +3,7 @@ import keras
 from keras import layers
 import ssl
 import requests
+import tensorflow as tf
 
 requests.packages.urllib3.disable_warnings()
 
@@ -13,22 +14,34 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-num_classes = 10
+num_classes = 12
 input_shape = (28, 28, 1)
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255)
 
-x_train = x_train.astype("float32") / 255
-x_test = x_test.astype("float32") / 255
-x_train = np.expand_dims(x_train, -1)
-x_test = np.expand_dims(x_test, -1)
-print("x_train shape:", x_train.shape)
-print(x_train.shape[0], "train samples")
-print(x_test.shape[0], "test samples")
+train_generator = datagen.flow_from_directory(
+    'dataset/train',
+    target_size=(28, 28),
+    batch_size=128,
+    class_mode='categorical',
+    color_mode='grayscale'
+)
 
+val_generator = datagen.flow_from_directory(
+    'dataset/val',
+    target_size=(28, 28),
+    batch_size=128,
+    class_mode='categorical',
+    color_mode='grayscale'
+)
 
-y_train = keras.utils.to_categorical(y_train, num_classes)
-y_test = keras.utils.to_categorical(y_test, num_classes)
+test_generator = datagen.flow_from_directory(
+    'dataset/test',
+    target_size=(28, 28),
+    batch_size=128,
+    class_mode='categorical',
+    color_mode='grayscale'
+)
 
 model = keras.Sequential(
     [
@@ -45,13 +58,26 @@ model = keras.Sequential(
 
 batch_size = 128
 epochs = 15
+nb_test_samples = 10944
+nb_train_samples = 51096
 
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
+model.fit(
+    train_generator,
+    batch_size=batch_size,
+    steps_per_epoch=nb_train_samples // batch_size,
+    epochs=epochs,
+    validation_data=val_generator,
+    validation_split=0.1
+)
 
-score = model.evaluate(x_test, y_test, verbose=0)
-print("Test loss:", score[0])
-print("Test accuracy:", score[1])
+scores = model.evaluate(
+    test_generator, 
+    steps=nb_test_samples // batch_size
+)
 
-model.save('mnist/mnist_recognation.h5')
+model.save('mnist/mnist_recognation_extendend.h5')
+
+print("Test loss:", scores[0])
+print("Test accuracy:", scores[1])
