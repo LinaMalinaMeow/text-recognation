@@ -1,3 +1,4 @@
 __pycache__
 .venv
-.DC_Store
+.DS_Store
+dataset
