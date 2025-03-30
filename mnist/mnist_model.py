@@ -10,7 +10,7 @@ from shared import mnist_preprocess
 MAX_RECOGNATION_PERCENT = 0.45
 
 
-def mnist_recognation(path):
+def run(path):
     prepared_image = mnist_preprocess.rec_digit(path)
 
     model = models.load_model('mnist/mnist_recognation_extendend.h5')
@@ -18,7 +18,7 @@ def mnist_recognation(path):
     prediction = model.predict(prepared_image)
 
     max_predict = np.amax((prediction[0]))
-    print(max_predict)
+    print(prediction)
 
     if (max_predict < MAX_RECOGNATION_PERCENT):
         return 'Не распознано'
@@ -30,4 +30,4 @@ def mnist_recognation(path):
 
     result = predicted_class[0]
 
-    return result
+    return str(result)

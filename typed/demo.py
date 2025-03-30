@@ -1,4 +1,4 @@
-from typed import get_text_from_image
+from typed import run
 import preprocess_image
 import matplotlib.pyplot as plt
 import os
@@ -19,7 +19,7 @@ for i, image_path in enumerate(image_paths):
     preprocessed = preprocess_image.run(image_path)
     preprocesed_images.append(preprocessed)
 
-    extracted_text = get_text_from_image(image_path)
+    extracted_text = run(image_path)
 
     extract_result = """
     {} результат: \n

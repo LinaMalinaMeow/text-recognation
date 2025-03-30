@@ -26,13 +26,13 @@ def custom_data_demo():
     def get_path(filename):
         return f'mnist/test_images/{filename}'
 
-    result1 = mnist_model.mnist_recognation(get_path('test1.png'))
-    result2 = mnist_model.mnist_recognation(get_path('test2.png'))
-    result3 = mnist_model.mnist_recognation(get_path('test3_negative.png'))
-    result4 = mnist_model.mnist_recognation(get_path('test4_negative.png'))
-    result5 = mnist_model.mnist_recognation(get_path('test5_very_negative.png'))
-    result6 = mnist_model.mnist_recognation(get_path('test6_cross.png'))
-    result7 = mnist_model.mnist_recognation(get_path('test7_dash.png'))
+    result1 = mnist_model.run(get_path('test1.png'))
+    result2 = mnist_model.run(get_path('test2.png'))
+    result3 = mnist_model.run(get_path('test3_negative.png'))
+    result4 = mnist_model.run(get_path('test4_negative.png'))
+    result5 = mnist_model.run(get_path('test5_very_negative.png'))
+    result6 = mnist_model.run(get_path('test6_cross.png'))
+    result7 = mnist_model.run(get_path('test7_dash.png'))
 
     print(f'Результат 1 должен быть равен 1, равен - {result1}')
     print(f'Результат 2 должен быть равен 2, равен - {result2}')
