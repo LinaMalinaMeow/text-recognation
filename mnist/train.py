@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import keras
 from keras import layers
+from keras import regularizers
 import ssl
 import requests
 import tensorflow as tf
@@ -17,7 +19,13 @@ else:
 num_classes = 12
 input_shape = (28, 28, 1)
 
-datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255)
+datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+    rescale=1. / 255,
+    rotation_range=10,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    zoom_range=0.1
+)
 
 train_generator = datagen.flow_from_directory(
     'dataset/train',
@@ -43,41 +51,52 @@ test_generator = datagen.flow_from_directory(
     color_mode='grayscale'
 )
 
-model = keras.Sequential(
-    [
-        keras.Input(shape=input_shape),
-        layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Flatten(),
-        layers.Dropout(0.5),
-        layers.Dense(num_classes, activation="softmax"),
-    ]
-)
+model = keras.Sequential([
+    keras.Input(shape=input_shape),
+    layers.Conv2D(32, kernel_size=(3, 3), activation="relu", kernel_regularizer=regularizers.L2(0.001)),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2, 2)),
+    layers.Conv2D(64, kernel_size=(3, 3), activation="relu", kernel_regularizer=regularizers.L2(0.001)),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2, 2)),
+    layers.Conv2D(128, kernel_size=(3, 3), activation="relu", kernel_regularizer=regularizers.L2(0.001)),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2, 2)),
+    layers.Flatten(),
+    layers.Dropout(0.5),
+    layers.Dense(128, activation="relu", kernel_regularizer=regularizers.L2(0.001)),
+    layers.Dropout(0.5),
+    layers.Dense(num_classes, activation="softmax"),
+])
 
 batch_size = 128
-epochs = 15
+epochs = 100
 nb_test_samples = 10944
 nb_train_samples = 51096
 
-model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+model.compile(
+    loss="categorical_crossentropy",
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+    metrics=["accuracy"]
+)
+
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+    tf.keras.callbacks.ModelCheckpoint(filepath='best_model.h5', monitor='val_loss', save_best_only=True)
+]
 
 model.fit(
     train_generator,
-    batch_size=batch_size,
     steps_per_epoch=nb_train_samples // batch_size,
     epochs=epochs,
     validation_data=val_generator,
-    validation_split=0.1
+    validation_steps=nb_test_samples // batch_size,
+    callbacks=callbacks
 )
 
-scores = model.evaluate(
-    test_generator, 
-    steps=nb_test_samples // batch_size
-)
+model.load_weights('mnist/best_model.h5')
 
-model.save('mnist/mnist_recognation_extendend.h5')
+scores = model.evaluate(test_generator, steps=nb_test_samples // batch_size)
 
 print("Test loss:", scores[0])
 print("Test accuracy:", scores[1])

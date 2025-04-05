@@ -7,12 +7,18 @@ base_path = 'table_recognize/test_images'
 
 coordinates_results = [
     run(f'{base_path}/test_image1.jpg'),
-    run(f'{base_path}/test_image3.png')
+    run(f'{base_path}/test_image3.png'),
+    run(f'{base_path}/image2.jpg'),
+    run(f'{base_path}/test_image4.jpg'),
+    run(f'{base_path}/image3.png')
 ]
 
 image_paths = [
     f'{base_path}/test_image1.jpg',
-    f'{base_path}/test_image3.png'
+    f'{base_path}/test_image3.png',
+    f'{base_path}/image2.jpg',
+    f'{base_path}/test_image4.jpg',
+    f'{base_path}/image3.png'
 ]
 
 for image_path, coordinates in zip(image_paths, coordinates_results):
