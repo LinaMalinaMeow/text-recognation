@@ -1,0 +1,43 @@
+.total {
+    font-size: 24px;
+    text-decoration: underline;
+}
+
+.fz18 {
+    font-size: 18px;
+}
+
+.fz24 {
+    font-size: 24px;
+}
+
+.brendColor {
+    color: var(--g-color-base-brand);
+}
+
+.table {
+    margin: 12px 0;
+}
+
+.tableUpperText {
+    margin-bottom: 8px;
+    display: block;
+}
+
+.errorText {
+    font-size: 30px;
+}
+
+.errorTitle {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.errors {
+    margin-bottom: 12px;
+}
+
+.warnings {
+    margin-bottom: 12px;
+}

@@ -4,3 +4,5 @@ __pycache__
 dataset
 vprpdf.pdf
 temp
+node_modules
+dist

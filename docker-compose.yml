@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  backend_ml:
+    build:
+      context: ./backend_ml
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"

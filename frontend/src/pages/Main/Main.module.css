@@ -1,0 +1,12 @@
+.root {
+    padding: 160px;
+}
+
+.descBox {
+    text-align: center;
+    max-width: 800px;
+}
+
+.startBtn {
+    margin-top: 16px;
+}
