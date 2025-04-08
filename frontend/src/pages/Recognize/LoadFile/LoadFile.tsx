@@ -10,7 +10,7 @@ export const LoadFile = observer(() => {
     const { 
         setFile, 
         currentFile, 
-        recognize,
+        recognizePdf,
         loadingStatus,
         result,
         destroy
@@ -28,7 +28,7 @@ export const LoadFile = observer(() => {
     return (
         <Flex gap='4' direction='column'>
             {!currentFile ? 
-                <input type='file' onChange={onChangeInput} accept='.jpg' /> : 
+                <input type='file' onChange={onChangeInput} /> : 
                 <img src={image as string} className={styles.image} />
             }
             <Flex gap='4'>
@@ -37,7 +37,7 @@ export const LoadFile = observer(() => {
                         view='action'
                         size='l'
                         disabled={loadingStatus === LoadingStatus.pending || !currentFile}
-                        onClick={recognize}>
+                        onClick={recognizePdf}>
                         Начать обработку
                     </Button>
                 }

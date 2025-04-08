@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
-def rec_digit(image_path, show_image=False):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+def rec_digit(pil_image, show_image=False):
+    image = np.array(pil_image.convert('L'))
 
     _, image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY_INV)
 

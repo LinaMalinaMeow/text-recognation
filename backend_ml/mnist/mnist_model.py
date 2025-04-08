@@ -12,7 +12,7 @@ MAX_RECOGNATION_PERCENT = 0.45
 def run(path):
     prepared_image = mnist_preprocess.rec_digit(path)
 
-    model = models.load_model('mnist/mnist_recognation_extendend3.h5')
+    model = models.load_model('mnist/best_model23.h5')
 
     prediction = model.predict(prepared_image)
 

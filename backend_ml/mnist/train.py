@@ -21,10 +21,6 @@ input_shape = (28, 28, 1)
 
 datagen = tf.keras.preprocessing.image.ImageDataGenerator(
     rescale=1. / 255,
-    rotation_range=10,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    zoom_range=0.1
 )
 
 train_generator = datagen.flow_from_directory(
@@ -71,8 +67,13 @@ model = keras.Sequential([
 
 batch_size = 128
 epochs = 100
-nb_test_samples = 10944
-nb_train_samples = 51096
+
+def count_files(directory):
+    return sum([len(files) for _, _, files in os.walk(directory)])
+
+nb_train_samples = count_files('dataset/train')
+nb_val_samples = count_files('dataset/val')
+nb_test_samples = count_files('dataset/test')
 
 model.compile(
     loss="categorical_crossentropy",
@@ -82,7 +83,7 @@ model.compile(
 
 callbacks = [
     tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
-    tf.keras.callbacks.ModelCheckpoint(filepath='best_model.h5', monitor='val_loss', save_best_only=True)
+    tf.keras.callbacks.ModelCheckpoint(filepath='mnist/best_model23.h5', monitor='val_loss', save_best_only=True)
 ]
 
 model.fit(
@@ -90,11 +91,11 @@ model.fit(
     steps_per_epoch=nb_train_samples // batch_size,
     epochs=epochs,
     validation_data=val_generator,
-    validation_steps=nb_test_samples // batch_size,
+    validation_steps=nb_val_samples // batch_size,
     callbacks=callbacks
 )
 
-model.load_weights('mnist/best_model.h5')
+model.load_weights('mnist/best_model23.h5')
 
 scores = model.evaluate(test_generator, steps=nb_test_samples // batch_size)
 

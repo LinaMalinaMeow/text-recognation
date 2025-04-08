@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import numpy as np
 
-conf_threshold = 0.9
+conf_threshold = 0.5
 
 def run(path):
     model = YOLO('table_recognize/cell_detect.pt')
@@ -19,25 +19,15 @@ def run(path):
 
     cells = sorted(cells, key=lambda b: (b[1], b[0]))
 
-    row_threshold = 10
-    isolation_threshold = 80
-    width_threshold = 20
-
-    filtered_cells = []
-    for i, cell in enumerate(cells):
-        x1, y1, x2, y2 = cell
-        neighboring_cells = [
-            1 for cx1, cy1, _, _ in cells
-            if np.sqrt((x1 - cx1) ** 2 + (y1 - cy1) ** 2) < isolation_threshold and (cx1, cy1) != (x1, y1)
-        ]
-        if len(neighboring_cells) >= 1:
-            filtered_cells.append(cell)
+    average_height = np.mean([y2 - y1 for _, y1, _, y2 in cells])
+    row_threshold = max(10, average_height * 0.1)
+    width_threshold = max(20, average_height * 0.2)
 
     rows = []
     current_row = []
     current_y = None
 
-    for cell in filtered_cells:
+    for cell in cells:
         x1, y1, x2, y2 = cell
         if current_y is None or abs(y1 - current_y) < row_threshold:
             current_row.append(cell)
@@ -47,7 +37,7 @@ def run(path):
             rows.append(current_row)
             current_row = [cell]
             current_y = y1
-    
+
     if current_row:
         current_row = sorted(current_row, key=lambda c: c[0])
         rows.append(current_row)
@@ -63,5 +53,5 @@ def run(path):
                 completed_row.append((x2_current, row[i][1], x1_next, row[i][3]))
         completed_row.append(row[-1])
         completed_rows.append(completed_row)
-    
+
     return completed_rows

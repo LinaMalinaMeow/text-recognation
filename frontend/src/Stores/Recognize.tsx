@@ -1,17 +1,17 @@
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import { fetchResource } from "./fetchResource";
-import { IRecognizeResponse } from "../../typings/recognize";
 import { BaseDataProvider, createDataLayout } from "../../utils/DataLayout";
 import { createContext } from "react";
 import { toBase64 } from "../utils/toBase64";
+import { IIRecognizeResponse } from "../typings/recognize";
 
 export class RecognizeStore implements BaseDataProvider {
-    private _recognize: fetchResource<IRecognizeResponse>;
+    private _recognize: fetchResource<IIRecognizeResponse>;
     @observable
     private _currentFile: File | null = null;
 
     constructor() {
-        this._recognize = new fetchResource<IRecognizeResponse>();
+        this._recognize = new fetchResource<IIRecognizeResponse>();
 
         makeObservable(this);
     }
@@ -19,6 +19,11 @@ export class RecognizeStore implements BaseDataProvider {
     @computed
     private get _baseUrl() {
         return 'http://127.0.0.1:5001/recognize';
+    }
+
+    @computed
+    private get _baseUrlPdf() {
+        return 'http://127.0.0.1:5001/recognize-pdf';
     }
 
     @computed
@@ -44,6 +49,21 @@ export class RecognizeStore implements BaseDataProvider {
             body: {
                 image_base64
             }
+        })
+    }
+
+    @action.bound
+    public async recognizePdf() {
+        if (!this._currentFile) {
+            throw Error('no files');
+        }
+
+        const formData = new FormData();
+        formData.append('pdf_file', this._currentFile);
+
+        this._recognize.loadData(this._baseUrlPdf, {
+            method: "POST",
+            body: formData
         })
     }
 

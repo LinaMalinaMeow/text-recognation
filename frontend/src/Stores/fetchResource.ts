@@ -4,7 +4,7 @@ import axios from "axios";
 
 interface ICreate {
     method?: Method, 
-    body?: Record<string, unknown>
+    body?: Record<string, unknown> | FormData
 }
 
 export enum LoadingStatus {

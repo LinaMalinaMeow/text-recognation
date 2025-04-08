@@ -1,7 +1,12 @@
+from PIL import Image
 import cv2
+import numpy as np
 
-def is_cell_empty(image_path, intensity_threshold=140, pixel_threshold=0.01, central_fraction=0.9):
-    cell_image = cv2.imread(image_path)
+def is_cell_empty(pil_image, intensity_threshold=140, pixel_threshold=0.01, central_fraction=0.9):
+    cell_image = np.array(pil_image)
+
+    if cell_image.ndim == 3 and cell_image.shape[2] == 3:
+        cell_image = cv2.cvtColor(cell_image, cv2.COLOR_RGB2BGR)
 
     gray_cell = cv2.cvtColor(cell_image, cv2.COLOR_BGR2GRAY)
 

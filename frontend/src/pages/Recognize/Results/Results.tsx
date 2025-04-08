@@ -12,17 +12,20 @@ export const Results = observer(() => {
         loadingStatus 
     } = useContext(RecognizeContext) as RecognizeStore;
 
-    const tableRows = useMemo(() => responseResult?.table_info?.reduce((acc, row, i) => {
-        if (i % 2 === 0) {
-            const curHeadings = [...acc.headings, ...row];
-            return {...acc, headings: curHeadings}
-        }
-        const curCells = [...acc.cells, ...row];
-        return {...acc, cells: curCells}
-    }, {headings: [] as string[], cells: [] as string[]}), [responseResult])
+    const tablesData = useMemo(() => responseResult?.tables?.map(({ table_info, image_url }) => {
+        const tableData = table_info?.reduce((acc, row, i) => {
+            if (i % 2 === 0) {
+                const curHeadings = [...acc.headings, ...row];
+                return { ...acc, headings: curHeadings };
+            }
+            const curCells = [...acc.cells, ...row];
+            return { ...acc, cells: curCells };
+        }, { headings: [] as string[], cells: [] as string[] });
 
-    console.log(tableRows)
+        return { ...tableData, image_url };
+    }), [responseResult]);
 
+    console.log(tablesData);
 
     if (loadingStatus === LoadingStatus.pending) {
         return <Spin size="m" />
@@ -34,34 +37,41 @@ export const Results = observer(() => {
 
     return (
         <Flex direction='column' gap='4'>
-           {Boolean(tableRows?.cells.length || tableRows?.headings.length) && 
-            <>
-                <div className={styles.table}>
+            {tablesData?.map((tableRows, pageIndex) => (
+                Boolean(tableRows?.cells.length || tableRows?.headings.length) && 
+                <div key={pageIndex} className={styles.table}>
                     <Text className={classNames(styles.fz18, styles.tableUpperText)}>
-                        Таблица для внесения баллов участника
+                        Таблица для страницы {pageIndex + 1}
                     </Text>
+                    {tableRows.image_url && (
+                        <img 
+                            src={`http://localhost:5001/${tableRows.image_url}`} 
+                            alt={`Изображение для страницы ${pageIndex + 1}`} 
+                            width={500}
+                            className={styles.pageImage} 
+                        />
+                    )}
                     <table>
-                        <tr>
-                            {tableRows?.headings?.map((v, i) => 
-                                <td key={i}>{v}</td>)}
-                        </tr>
-                        <tr>
-                            {tableRows?.cells?.map((v, i) => 
-                                <td 
-                                    key={i} 
-                                    contentEditable
-                                    suppressContentEditableWarning>
-                                        {v}
-                                </td>)}
-                        </tr>
-                    </table> 
+                        <thead>
+                            <tr>
+                                {tableRows?.headings?.map((v, i) => 
+                                    <th key={i}>{v}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {tableRows?.cells?.map((v, i) => 
+                                    <td 
+                                        key={i} 
+                                        contentEditable
+                                        suppressContentEditableWarning>
+                                            {v}
+                                    </td>)}
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-               
-                {/* <Text className={styles.total}>Сумма баллов: 
-                {' '}
-                <span className={styles.brendColor}>{scoreValue}</span></Text> */}
-            </>
-           }
+            ))}
         </Flex>
     )
 });
