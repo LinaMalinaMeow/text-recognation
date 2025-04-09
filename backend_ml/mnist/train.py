@@ -95,7 +95,7 @@ model.fit(
     callbacks=callbacks
 )
 
-model.load_weights('mnist/best_model23.h5')
+model.load_weights('mnist/best_model.h5')
 
 scores = model.evaluate(test_generator, steps=nb_test_samples // batch_size)
 

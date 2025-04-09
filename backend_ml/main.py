@@ -11,9 +11,12 @@ import io
 import fitz
 import cv2
 import numpy as np
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__, static_folder='static')
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def get_table_info(image, page_number):
     row_results = []
@@ -23,7 +26,6 @@ def get_table_info(image, page_number):
 
     original_image_path = os.path.join(page_dir, 'original_image.png')
     image.save(original_image_path)
-
 
     try:
         rows = table_recognize.run(image)
@@ -175,7 +177,62 @@ def recognize_pdf():
     response.headers.add("Content-Type", "application/json; charset=utf-8")
     return response
 
+@app.route('/recognize-pdf-socket', methods=['POST'])
+def recognize_pdf_socket():
+    socketio.emit('pdf_status', {"is_loading": True})
+
+    if 'pdf_file' not in request.files:
+        return jsonify({'error': 'Не предоставлен PDF-файл'}), 400
+
+    pdf_file = request.files['pdf_file']
+
+    try:
+        pdf_data = pdf_file.read()
+        pdf_document = fitz.open(stream=pdf_data, filetype="pdf")
+    except Exception as e:
+        return jsonify({'error': f'Неверные данные PDF: {str(e)}'}), 400
+    
+
+    output_dir = 'static/pdf_pages'
+    preprocessed_output_dir = 'static/pdf_pages/preprocessed'
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(preprocessed_output_dir, exist_ok=True)
+
+    for i in range(len(pdf_document)):
+        try:
+            page = pdf_document.load_page(i)
+            pix = page.get_pixmap(dpi=300)
+            image_bytes = pix.tobytes("png")
+
+            image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+
+            original_image_filename = f'page_{i + 1}.png'
+            original_image_path = os.path.join(output_dir, original_image_filename)
+            image.save(original_image_path, format='PNG')
+
+            preprocessed_image = preprocess_image(image)
+
+            preprocessed_image_filename = f'page_{i + 1}_preprocessed.png'
+            preprocessed_image_path = os.path.join(preprocessed_output_dir, preprocessed_image_filename)
+            preprocessed_image.save(preprocessed_image_path, format='PNG')
+
+            table_info = get_table_info(preprocessed_image, i + 1)
+
+            socketio.emit('pdf_status', {"is_loading": False})
+            socketio.emit('page_processed', {
+                'page': i + 1,
+                'table_info': table_info,
+                'image_url': f'/static/pdf_pages/{original_image_filename}',
+            })
+        except Exception as e:
+            socketio.emit('page_processed', {
+                'page': i + 1,
+                'error': f'Ошибка при обработке страницы {i + 1}: {str(e)}',
+                'image_url': None,
+            })
+
+    return jsonify({'message': 'PDF обработан'}), 200
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    socketio.run(app, host='0.0.0.0', port=5001)
