@@ -6,3 +6,5 @@ vprpdf.pdf
 temp
 node_modules
 dist
+.vscode
+static
