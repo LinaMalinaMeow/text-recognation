@@ -27,6 +27,11 @@ export class RecognizeStore implements BaseDataProvider {
     }
 
     @computed
+    public get _baseUrlPdfStream() {
+        return 'http://127.0.0.1:5001/recognize-pdf-socket';
+    }
+
+    @computed
     public get currentFile() {
         return this._currentFile;
     }
@@ -61,7 +66,7 @@ export class RecognizeStore implements BaseDataProvider {
         const formData = new FormData();
         formData.append('pdf_file', this._currentFile);
 
-        this._recognize.loadData(this._baseUrlPdf, {
+        this._recognize.loadData(this._baseUrlPdfStream, {
             method: "POST",
             body: formData
         })

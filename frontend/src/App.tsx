@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { Main } from './pages/Main/Main';
-import { Recognize } from './pages/Recognize/Recognize';
 import { URL_PARTS } from './constants/url';
+import { Recognize } from './pages/Recognize/Recognize';
 
 export const App = () => {
     return (

@@ -1,18 +1,25 @@
 import { observer } from "mobx-react-lite"
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { RecognizeContext, RecognizeStore } from "../../../Stores/Recognize";
 import { LoadingStatus } from "../../../Stores/fetchResource";
 import { Flex, Spin, Text } from "@gravity-ui/uikit";
 import styles from './Results.module.css';
 import classNames from "classnames";
+import io from 'socket.io-client';
+
+const BASE_URL = '89.169.138.153'
 
 export const Results = observer(() => {
     const { 
-        result: responseResult, 
         loadingStatus 
     } = useContext(RecognizeContext) as RecognizeStore;
 
-    const tablesData = useMemo(() => responseResult?.tables?.map(({ table_info, image_url }) => {
+    const [results, setResults] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const socket = useMemo(() => io(`http://${BASE_URL}:5001`), [])
+
+    const tablesData = useMemo(() => results?.map(({ table_info, image_url }) => {
         const tableData = table_info?.reduce((acc, row, i) => {
             if (i % 2 === 0) {
                 const curHeadings = [...acc.headings, ...row];
@@ -23,11 +30,35 @@ export const Results = observer(() => {
         }, { headings: [] as string[], cells: [] as string[] });
 
         return { ...tableData, image_url };
-    }), [responseResult]);
+    }), [results]);
 
     console.log(tablesData);
 
-    if (loadingStatus === LoadingStatus.pending) {
+    useEffect(() => {
+        socket.on('pdf_status', (data) => {
+            console.log(data)
+            if (data.error) {
+                console.error('Ошибка:', data.error);
+            } else {
+                setIsLoading(data.is_loading);
+            }
+        })
+
+        socket.on('page_processed', (data) => {
+            if (data.error) {
+                console.error(`Ошибка на странице ${data.page}:`, data.error);
+            } else {
+                console.log(`Страница ${data.page} обработана:`, data);
+                setResults((prevResults) => [...prevResults, data]);
+            }
+        });
+
+        return () => {
+            socket.off('page_processed');
+        };
+    }, []);
+
+    if (isLoading) {
         return <Spin size="m" />
     }
 
@@ -45,7 +76,7 @@ export const Results = observer(() => {
                     </Text>
                     {tableRows.image_url && (
                         <img 
-                            src={`http://localhost:5001/${tableRows.image_url}`} 
+                            src={`http://${BASE_URL}:5001/${tableRows.image_url}`} 
                             alt={`Изображение для страницы ${pageIndex + 1}`} 
                             width={500}
                             className={styles.pageImage} 
