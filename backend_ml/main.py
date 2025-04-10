@@ -135,7 +135,6 @@ def recognize_pdf():
 
     table_infos = []
     output_dir = 'static/pdf_pages'
-    os.rmdir(output_dir)
     preprocessed_output_dir = 'static/pdf_pages/preprocessed'
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(preprocessed_output_dir, exist_ok=True)
@@ -235,4 +234,4 @@ def recognize_pdf_socket():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='89.169.138.153', port=5001)
+    socketio.run(app, host='127.0.0.1', port=5001)
